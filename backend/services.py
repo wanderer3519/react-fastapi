@@ -1,5 +1,3 @@
-import fastapi as _fastapi
-import fastapi.security as _security
 import jwt as _jwt
 import datetime as _dt
 
@@ -11,7 +9,6 @@ import schemas as _schemas
 import passlib.hash as _hash
 
 JWT_SECRET = 'myjwtsecret'
-oauth2schema = _security.OAuth2PasswordBearer(tokenUrl='/api/token')
 
 def create_database():
     return _database.Base.metadata.create_all(bind = _database.engine)
