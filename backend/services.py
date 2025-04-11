@@ -1,6 +1,4 @@
 import jwt as _jwt
-import datetime as _dt
-
 import sqlalchemy.orm as _orm
 import database as _database
 import models as _models
@@ -61,50 +59,3 @@ async def get_current_user(db: _orm.Session = _fastapi.Depends(get_db), token: s
         raise _fastapi.HTTPException(status_code=401, detail='Invalid email or password')
     
     return _schemas.User.model_validate(user)
-
-async def create_lead(user: _schemas.User, db:_orm.Session, lead: _schemas.LeadCreate):
-    lead = _models.Lead(**lead.model_dump(), owner_id = user.id)
-    db.add(lead)
-    db.commit()
-
-    db.refresh(lead)
-    return _schemas.Lead.model_validate(lead)
-
-async def get_leads(user: _schemas.User, db: _orm.Session):
-    leads = db.query(_models.Lead).filter_by(owner_id = user.id)
-    return list(map(_schemas.Lead.model_validate, leads))
-
-async def _lead_selector(lead_id: int, user: _schemas.User, db:_orm.Session):
-    lead = db.query(_models.Lead).filter_by(owner_id = user.id).filter(_models.Lead.id == lead_id).first()
-
-    if not lead:
-        raise _fastapi.HTTPException(status_code=404, detail='Lead not found')
-    
-    return lead
-
-async def get_lead(lead_id: int, user: _schemas.User, db: _orm.Session):
-    lead = await _lead_selector(lead_id, user, db)
-    
-    return _schemas.Lead.model_validate(lead)
-
-async def delete_lead(lead_id: int, user: _schemas.User, db: _orm.Session):
-    lead = await _lead_selector(lead_id, user, db)
-    db.delete(lead)
-    # lead.delete()
-    db.commit()
-
-
-async def update_lead(lead_id: int, user: _schemas.User, db: _orm.Session, lead: _schemas.LeadCreate):
-    lead_obj = await _lead_selector(lead_id, user, db)
-    # lead_obj.update(lead.model_dump())
-    lead_obj.first_name = lead.first_name
-    lead_obj.last_name = lead.last_name
-    lead_obj.email = lead.email
-    lead_obj.company = lead.company
-    lead_obj.note = lead.note
-    lead_obj.date_last_updated = _dt.datetime.now()
-    
-    db.commit()
-    db.refresh(lead_obj)
-
-    return _schemas.Lead.model_validate(lead_obj)
