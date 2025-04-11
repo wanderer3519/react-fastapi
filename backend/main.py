@@ -51,7 +51,7 @@ CRUD endpoints:
 """
 
 
-@app.post("/api/leads/", response_model=_schemas.Lead)
+@app.post("/api/leads", response_model=_schemas.Lead)
 async def create_lead(
     lead: _schemas.LeadCreate,
     user: _schemas.User = _fastapi.Depends(_services.get_current_user),
